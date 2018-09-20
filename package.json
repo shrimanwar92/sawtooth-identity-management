@@ -1,0 +1,22 @@
+{
+  "name": "sawtooth-ekyc",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "tsc && node build/index.js"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "bcrypt": "^3.0.0",
+    "config": "^2.0.1",
+    "eth-crypto": "^1.2.4",
+    "key-encoder": "^1.1.6",
+    "python-shell": "^1.0.4",
+    "sawtooth-sdk": "^1.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^8.10.21",
+    "typescript": "^2.6.1"
+  }
+}
