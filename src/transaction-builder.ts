@@ -17,18 +17,9 @@ const privateKeyHex = privateKey.asHex();
 const publicKeyHex = signer.getPublicKey().asHex();
 
 console.log('public: '+publicKeyHex);
-console.log('private: '+privateKeyHex);
+console.log('private: '+privateKeyHex);*/
 
-const user = {
-    firstName: 'asdf',
-    lastName: 'asdf',
-    dob: 'asdf',
-    aadhar: 'asdf',
-    pan: 'asdf',
-    documents: []
-};
-
-async function asymmetricEncryptDocumentpassword(publicKey, documentPasword) {
+/*async function asymmetricEncryptDocumentpassword(publicKey, documentPasword) {
     // asymmetric encrypt the document password so user with private key can decrypt it
     const obj = {};
     const encryptedPassword = await AsymmetricEncryption.encrypt(publicKeyHex, documentPasword);
@@ -43,11 +34,11 @@ const encryptedDocument = SymmetricEncryption.encryptDocument(user, documentPass
 asymmetricEncryptDocumentpassword(publicKeyHex, documentPassword).then(obj => {
     // console.log(obj);
     createPayloadAndSend(encryptedDocument, obj);
-});
+});*/
 
 
 
-function createPayloadAndSend(encryptedDocument, obj) {
+function createPayloadAndSend(encryptedDocument, obj, publicKeyHex, signer) {
     let payload = {
         action: 'create',
         data: encryptedDocument,
@@ -102,15 +93,15 @@ function createPayloadAndSend(encryptedDocument, obj) {
     }).then(data => {
        console.log(data.data);
     });
-}*/
+}
 
-function getData() {
+/*function getData() {
   axios.get(`http://localhost:8008/state?address=70d6c6004f540c951b438e876601e2dbcfe601f1d8a10e13251af0b8cd8d962bfae7d7`).then(response => {
     const data = decode(response.data.data[0].data);
     const pri = '997dd7c3480a5220f8ae64f930c1a0dd0448a01d8233f4e7dba11acdf3d03c12';
     const pub = '02e65c56a989b3aeeb458c55b9bb14153d116bc795ca29551229fd4f143cdc3ae5';
-    /*const pwd = SymmetricEncryption.generateDocumentPwd(pub);
-    console.log(pwd);*/
+    const pwd = SymmetricEncryption.generateDocumentPwd(pub);
+    console.log(pwd);
     // var d = JSON.parse(SymmetricEncryption.decryptDocument(data.user, pwd));
     // console.log(d);
     
@@ -123,4 +114,4 @@ function getData() {
   });
 }
 
-getData();
+getData();*/
