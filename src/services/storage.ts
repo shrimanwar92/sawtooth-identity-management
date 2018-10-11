@@ -4,11 +4,9 @@ import * as protobuf from 'sawtooth-sdk/protobuf';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Secp256k1PrivateKey } from 'sawtooth-sdk/signing/secp256k1';
+import AddressStore from './addressing';
 
 class Storage {
-
-	FAMILY: string = "sawtoothekyc";
-	PREFIX: string = this.hash(this.FAMILY).substr(0, 6);
 
 	async makeKeyPair(userName: string): Promise<boolean> {
 		const context = createContext('secp256k1');
@@ -45,8 +43,13 @@ class Storage {
     async generateAddress(userName: string): Promise<string> {
     	const keyPair = await this.makeKeyPair(userName);
     	if(keyPair) {
-    		const address = await this.getUserAddress(userName);
-    		return address.publicKey;
+            try {
+                const address = await this.getUserAddress(userName);
+                return address;
+            } catch (err) {
+                console.log(err);
+                return err;
+            }
     	}
     }
 
@@ -59,10 +62,12 @@ class Storage {
 	        const privateKey = Secp256k1PrivateKey.fromHex(privateKeyStr);
 	        const signer = new CryptoFactory(context).newSigner(privateKey);
 	        const publicKey = signer.getPublicKey().asHex();
-	        const address = this.PREFIX + this.hash(publicKey).substr(0, 64);
+	        const address = AddressStore.getUserAddress(publicKey);
 	        return {
-	        	publicKey: address,
-	        	signer: signer
+	        	address: address,
+                publicKey: publicKey,
+	        	signer: signer,
+                privateKey: privateKeyStr
 	        }
     	} catch (err) {
     		return err;

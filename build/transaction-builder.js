@@ -1,51 +1,62 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const encoding_1 = require("./services/encoding");
 const crypto_1 = require("crypto");
 const protobuf_1 = require("sawtooth-sdk/protobuf");
 const axios_1 = require("axios");
-const FAMILY_NAME = 'kyc';
-const FAMILY_VERSION = '0.1';
-const NAMESPACE = '70d6c6';
-/*const context = createContext('secp256k1');
-const privateKey = context.newRandomPrivateKey();
-// const privateKey = Secp256k1PrivateKey.fromHex('70ce1a5659f3b18ba7487d12912dd94878fc5a9cfbe6464a479bffd1633ef07a');
-const signer = new CryptoFactory(context).newSigner(privateKey);
-const privateKeyHex = privateKey.asHex();
-const publicKeyHex = signer.getPublicKey().asHex();
-
-console.log('public: '+publicKeyHex);
-console.log('private: '+privateKeyHex);*/
-/*async function asymmetricEncryptDocumentpassword(publicKey, documentPasword) {
-    // asymmetric encrypt the document password so user with private key can decrypt it
-    const obj = {};
-    const encryptedPassword = await AsymmetricEncryption.encrypt(publicKeyHex, documentPasword);
-    obj[publicKeyHex] = encryptedPassword;
-    return obj;
+const CONSTANTS = require("./services/constants");
+function asymmetricEncryptDocumentpassword(publicKey, documentPasword) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // asymmetric encrypt the document password so user with private key can decrypt it
+        const obj = {};
+        const encryptedPassword = yield encoding_1.AsymmetricEncryption.encrypt(publicKey, documentPasword);
+        obj[publicKey] = encryptedPassword; // {'02eda3e96c40f148eb41aed4f9b480ec45164': '3298234wehkjrwhe=24982'}
+        return obj;
+    });
 }
-
-// generate document password and encrypt document
-const documentPassword = SymmetricEncryption.generateDocumentPwd(publicKeyHex);
-const encryptedDocument = SymmetricEncryption.encryptDocument(user, documentPassword);
-
-asymmetricEncryptDocumentpassword(publicKeyHex, documentPassword).then(obj => {
-    // console.log(obj);
-    createPayloadAndSend(encryptedDocument, obj);
-});*/
-function createPayloadAndSend(encryptedDocument, obj, publicKeyHex, signer) {
+function encryptUserDocument(userDoc, publicKey) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // generate document password and encrypt document
+        const documentPassword = encoding_1.SymmetricEncryption.generateDocumentPwd(publicKey); // ex: 71hwouf1TEnUBM9ahZObYOHlcT0D3UQu91PcOVvrrTA=
+        const encryptedDocument = encoding_1.SymmetricEncryption.encryptDocument(userDoc, documentPassword); // kshhaslahlhfk=&$hajkshfkja=, 123456
+        try {
+            const encryptedPwd = yield asymmetricEncryptDocumentpassword(publicKey, documentPassword);
+            return {
+                doc: encryptedDocument,
+                pwd: encryptedPwd
+            };
+        }
+        catch (err) {
+            console.log(err);
+            return err;
+        }
+    });
+}
+exports.encryptUserDocument = encryptUserDocument;
+function createPayloadAndSend(action, encryptedDocument, obj, publicKeyHex, signer) {
     let payload = {
-        action: 'create',
-        data: encryptedDocument,
-        approvedList: JSON.stringify(obj)
+        action: action,
+        data: encryptedDocument
     };
+    if (action == 'create') {
+        payload['approvedList'] = JSON.stringify(obj);
+    }
     const payloadBytes = encoding_1.encode(payload);
     const transactionHeaderBytes = protobuf_1.TransactionHeader.encode({
         signerPublicKey: publicKeyHex,
         batcherPublicKey: publicKeyHex,
-        familyName: FAMILY_NAME,
-        familyVersion: FAMILY_VERSION,
-        inputs: [NAMESPACE],
-        outputs: [NAMESPACE],
+        familyName: CONSTANTS.FAMILY_NAME,
+        familyVersion: CONSTANTS.FAMILY_VERSION,
+        inputs: [CONSTANTS.NAMESPACE],
+        outputs: [CONSTANTS.NAMESPACE],
         nonce: (Math.random() * Math.pow(10, 18)).toString(36),
         payloadSha512: crypto_1.createHash('sha512').update(payloadBytes).digest('hex')
     }).finish();
@@ -70,31 +81,10 @@ function createPayloadAndSend(encryptedDocument, obj, publicKeyHex, signer) {
         batches: [batch]
     }).finish();
     axios_1.default({
-        url: 'http://localhost:8008/batches',
+        url: 'http://localhost:8008/batches?wait',
         method: 'POST',
         data: batchListBytes,
         headers: { 'Content-Type': 'application/octet-stream' }
-    }).then(data => {
-        console.log(data.data);
     });
 }
-/*function getData() {
-  axios.get(`http://localhost:8008/state?address=70d6c6004f540c951b438e876601e2dbcfe601f1d8a10e13251af0b8cd8d962bfae7d7`).then(response => {
-    const data = decode(response.data.data[0].data);
-    const pri = '997dd7c3480a5220f8ae64f930c1a0dd0448a01d8233f4e7dba11acdf3d03c12';
-    const pub = '02e65c56a989b3aeeb458c55b9bb14153d116bc795ca29551229fd4f143cdc3ae5';
-    const pwd = SymmetricEncryption.generateDocumentPwd(pub);
-    console.log(pwd);
-    // var d = JSON.parse(SymmetricEncryption.decryptDocument(data.user, pwd));
-    // console.log(d);
-    
-    let approvedList = JSON.parse(data.approvedList);
-    AsymmetricEncryption.decrypt(pri, approvedList[pub]).then(dec => {
-      console.log(dec);
-      var d = JSON.parse(SymmetricEncryption.decryptDocument(data.user, dec));
-      console.log(d);
-    })
-  });
-}
-
-getData();*/
+exports.createPayloadAndSend = createPayloadAndSend;

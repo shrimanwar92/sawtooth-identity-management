@@ -28,7 +28,7 @@ class KycHandler extends handler_1.TransactionHandler {
             return user_actions_1.createUser(context, publicKey, payload);
         }
         else if (action == 'update') {
-            // return updateUser(context, publicKey, signature, payload);
+            return user_actions_1.updateUser(context, publicKey, payload);
         }
         else if (action == 'delete') {
             return user_actions_1.deleteUser(context, publicKey);

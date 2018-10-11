@@ -1,17 +1,10 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const bodyParser = require("body-parser");
 const index_1 = require("./index");
-const storage_1 = require("./services/storage");
+// import Storage from './services/storage';
+const WebSocket = require("universal-websocket-client");
 class App {
     constructor() {
         this.app = express();
@@ -21,15 +14,30 @@ class App {
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({ extended: false }));
         index_1.default();
+        this.startWebSocket();
+    }
+    startWebSocket() {
+        let ws = new WebSocket('ws:localhost:8008/subscriptions');
+        console.log('opening websocket connection');
+        ws.onopen = () => {
+            console.log('websocket opened...');
+            ws.send(JSON.stringify({
+                'action': 'subscribe',
+                'address_prefixes': ['70d6c6']
+            }));
+        };
+        ws.onmessage = (data) => {
+            console.log(data);
+        };
     }
 }
 const app = new App().app;
 const PORT = 3001;
-const storage = new storage_1.default();
+// const storage = new Storage();
 app.listen(PORT, () => {
     console.log("Express server listening on port " + PORT);
 });
-app.get('/signup', (req, resp) => __awaiter(this, void 0, void 0, function* () {
+/*app.get('/signup', async (req: Request, resp: Response) => {
     /*const user = {
         firstName: 'asdf',
         lastName: 'asdf',
@@ -37,13 +45,15 @@ app.get('/signup', (req, resp) => __awaiter(this, void 0, void 0, function* () {
         aadhar: 'asdf',
         pan: 'asdf',
         documents: []
-    };*/
+    };
     //const userName = req.body.userName;
-    const address = yield storage.generateAddress('asdads123123');
+    const address = await storage.generateAddress('asdads123123');
     if (address) {
-        resp.send({ publicKey: address });
+        resp.send({publicKey: address});
     }
     // resp.send({publicKey: 'asdasd'});
-}));
-app.post('/signin', (req, res) => {
 });
+
+app.post('/signin', (req: Request, res: Response) => {
+    
+});*/ 

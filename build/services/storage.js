@@ -13,11 +13,8 @@ const signing_1 = require("sawtooth-sdk/signing");
 const fs = require("fs");
 const path = require("path");
 const secp256k1_1 = require("sawtooth-sdk/signing/secp256k1");
+const addressing_1 = require("./addressing");
 class Storage {
-    constructor() {
-        this.FAMILY = "sawtoothekyc";
-        this.PREFIX = this.hash(this.FAMILY).substr(0, 6);
-    }
     makeKeyPair(userName) {
         return __awaiter(this, void 0, void 0, function* () {
             const context = signing_1.createContext('secp256k1');
@@ -59,8 +56,14 @@ class Storage {
         return __awaiter(this, void 0, void 0, function* () {
             const keyPair = yield this.makeKeyPair(userName);
             if (keyPair) {
-                const address = yield this.getUserAddress(userName);
-                return address.publicKey;
+                try {
+                    const address = yield this.getUserAddress(userName);
+                    return address;
+                }
+                catch (err) {
+                    console.log(err);
+                    return err;
+                }
             }
         });
     }
@@ -74,10 +77,12 @@ class Storage {
                 const privateKey = secp256k1_1.Secp256k1PrivateKey.fromHex(privateKeyStr);
                 const signer = new signing_1.CryptoFactory(context).newSigner(privateKey);
                 const publicKey = signer.getPublicKey().asHex();
-                const address = this.PREFIX + this.hash(publicKey).substr(0, 64);
+                const address = addressing_1.default.getUserAddress(publicKey);
                 return {
-                    publicKey: address,
-                    signer: signer
+                    address: address,
+                    publicKey: publicKey,
+                    signer: signer,
+                    privateKey: privateKeyStr
                 };
             }
             catch (err) {

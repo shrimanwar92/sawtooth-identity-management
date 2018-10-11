@@ -29,27 +29,29 @@ function createUser(context, publicKey, payload) {
     });
 }
 exports.createUser = createUser;
-/*async function updateUser (context: any, publicKey: string, signature: string, userData: any): Promise<any> {
-    const address: string = AddressStore.getUserAddress(publicKey);
-    const updates = {};
-
-    try {
-        const state = await context.getState([address]);
-        if(state[address].length == 0) {
-            throw new InvalidTransaction(`User does not exist with key: ${publicKey}`);
+function updateUser(context, publicKey, payload) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const address = addressing_1.default.getUserAddress(publicKey);
+        const updates = {};
+        try {
+            const state = yield context.getState([address]);
+            const decodedUser = encoding_1.decode(state[address]);
+            console.log(decodedUser);
+            if (state[address].length == 0) {
+                throw new exceptions_1.InvalidTransaction(`User does not exist with key: ${publicKey}`);
+            }
+            if (decodedUser['owner'] != publicKey) {
+                throw new exceptions_1.InvalidTransaction(`Update can be done by owner itself.`);
+            }
+            updates[address] = encoding_1.encode({ owner: publicKey, user: payload.data, approvedList: decodedUser.approvedList });
+            return context.setState(updates);
         }
-        const decodedUser = decode(state[address]);
-        if(decodedUser['key'] != publicKey) {
-            throw new InvalidTransaction(`Update can be done by owner itself.`);
+        catch (err) {
+            throw new Error(err);
         }
-        const u = buildUser(userData);
-        updates[address] = encode({  key: publicKey,  user: u });
-        return context.setState(updates);
-
-    } catch (err) {
-        throw new Error(err);
-    }
-}*/
+    });
+}
+exports.updateUser = updateUser;
 function deleteUser(context, publicKey) {
     return __awaiter(this, void 0, void 0, function* () {
         const address = addressing_1.default.getUserAddress(publicKey);

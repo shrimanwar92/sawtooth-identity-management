@@ -19,27 +19,29 @@ async function createUser(context: any, publicKey: string, payload): Promise<any
   }
 }
 
-/*async function updateUser (context: any, publicKey: string, signature: string, userData: any): Promise<any> {
+async function updateUser (context: any, publicKey: string, payload: any): Promise<any> {
     const address: string = AddressStore.getUserAddress(publicKey);
     const updates = {};
 
     try {
         const state = await context.getState([address]);
+        const decodedUser = decode(state[address]);
+
+        console.log(decodedUser);
+
         if(state[address].length == 0) {
             throw new InvalidTransaction(`User does not exist with key: ${publicKey}`);
         }
-        const decodedUser = decode(state[address]);
-        if(decodedUser['key'] != publicKey) {
+        if(decodedUser['owner'] != publicKey) {
             throw new InvalidTransaction(`Update can be done by owner itself.`);
         }
-        const u = buildUser(userData);
-        updates[address] = encode({  key: publicKey,  user: u });
+        updates[address] = encode({  owner: publicKey,  user: payload.data, approvedList: decodedUser.approvedList });
         return context.setState(updates);
 
     } catch (err) {
         throw new Error(err);
     }
-}*/
+}
 
 async function deleteUser (context: any, publicKey: string): Promise<any> {
     const address: string = AddressStore.getUserAddress(publicKey);
@@ -63,4 +65,4 @@ async function reject (context: any, publicKey: string): Promise<any> {
 
 }
 
-export { createUser, deleteUser, approve, reject };
+export { createUser, deleteUser, approve, reject, updateUser };

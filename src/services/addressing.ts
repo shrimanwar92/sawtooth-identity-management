@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
+import * as CONSTANTS from './constants';
 
-const NAMESPACE: string = '70d6c6';
 const PREFIXES: any = {
 	USER: '00'
 };
@@ -12,11 +12,11 @@ class AddressStore {
 	}
 
 	getUserAddress(publicKey: string): string {
-		return NAMESPACE + PREFIXES.USER + this.hash(publicKey, 62);
+		return CONSTANTS.NAMESPACE + PREFIXES.USER + this.hash(publicKey, 62);
 	}
 
 	isValidAddress(address: string): boolean {
-		const pattern = `^${NAMESPACE}[0-9a-f]{64}$`;
+		const pattern = `^${CONSTANTS.NAMESPACE}[0-9a-f]{64}$`;
 		return new RegExp(pattern).test(address);
 	}
 }
