@@ -15,6 +15,9 @@ const path = require("path");
 const secp256k1_1 = require("sawtooth-sdk/signing/secp256k1");
 const addressing_1 = require("./addressing");
 class Storage {
+    constructor() {
+        this.rootPath = 'C:/Users/nshriman/Videos/sawtooth-kyc/';
+    }
     makeKeyPair(userName) {
         return __awaiter(this, void 0, void 0, function* () {
             const context = signing_1.createContext('secp256k1');
@@ -23,8 +26,8 @@ class Storage {
             const privateKeyHex = privateKey.asHex();
             const publicKeyHex = signer.getPublicKey().asHex();
             try {
-                fs.writeFileSync(path.resolve(__dirname, `./../keys/${userName}.priv`), privateKeyHex);
-                fs.writeFileSync(path.resolve(__dirname, `./../keys/${userName}.pub`), publicKeyHex);
+                fs.writeFileSync(path.resolve(__dirname, `./../../keys/${userName}.priv`), privateKeyHex);
+                fs.writeFileSync(path.resolve(__dirname, `./../../keys/${userName}.pub`), publicKeyHex);
                 return true;
             }
             catch (err) {
@@ -35,7 +38,7 @@ class Storage {
     getUserPublicKey(userName) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield fs.readFileSync(`${process.cwd()}/keys/${userName}.pub`);
+                return yield fs.readFileSync(path.resolve(__dirname, `./../../keys/${userName}.pub`));
             }
             catch (err) {
                 return err;
@@ -45,7 +48,7 @@ class Storage {
     getUserPrivateKey(userName) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield fs.readFileSync(`${process.cwd()}/keys/${userName}.priv`);
+                return yield fs.readFileSync(path.resolve(__dirname, `./../../keys/${userName}.priv`));
             }
             catch (err) {
                 return err;

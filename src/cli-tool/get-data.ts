@@ -1,4 +1,4 @@
-import Storage from './services/storage';
+/*import Storage from './services/storage';
 import { createPayloadAndSend, encryptUserDocument } from './transaction-builder';
 
 const storage = new Storage();
@@ -69,37 +69,33 @@ async function send(action, user, pub, signer) {
 	console.log('\n');
 
 	createPayloadAndSend(action, data.doc, data.pwd, pub, signer);
-}
+}*/
 
-import { encode, decode, AsymmetricEncryption, SymmetricEncryption } from './services/encoding';
+import { encode, decode, AsymmetricEncryption, SymmetricEncryption } from './../services/encoding';
 import axios from 'axios';
 
-function getData(addr, pub, pri) {
-  axios.get(`http://localhost:8008/state?address=${addr}`).then(response => {
-    const data = decode(response.data.data[0].data);
-    // const pri = '4f6e55c28fa7344444397a1afd4f44c8e3d529f9541e58ba70d76a531f5db5ec';
-    // const pub = '038fb57f49a1b4b9b41bd52762c2f427373c79fa2740e173ce7534865e2d3525f2';
-    // const pwd = SymmetricEncryption.generateDocumentPwd(pub);
-    // console.log(pwd);
-    // var d = JSON.parse(SymmetricEncryption.decryptDocument(data.user, pwd));
-    // console.log(d);
-    
-    console.log('\n');
-    console.log(data);
-    console.log('\n');
-    let approvedList = JSON.parse(data.approvedList);
-    AsymmetricEncryption.decrypt(pri, approvedList[pub]).then(dec => {
-    	console.log('\n');
-      	console.log(dec);
-      	console.log('\n');
+export function getData(addr, pub, pri) {
+  	axios.get(`http://localhost:8008/state?address=${addr}`).then(response => {
+		const data = decode(response.data.data[0].data);
+	    let approvedList = JSON.parse(data.approvedList);
 
-      	var d = JSON.parse(SymmetricEncryption.decryptDocument(data.user, dec));
-      	
-      	console.log('\n');
-      	console.log(d);
-      	console.log('\n');
-    })
-  });
+	    // id public key is not in approved list means, that user has not access to the data
+	    if(approvedList[pub] == undefined) {
+	    	console.log('You do not have access to data. Access denied.');
+	    }
+	    AsymmetricEncryption.decrypt(pri, approvedList[pub]).then(dec => {
+	    	console.log('\n');
+	      	console.log(dec);
+
+	      	var d = JSON.parse(SymmetricEncryption.decryptDocument(data.user, dec));
+	      	
+	      	console.log('\n');
+	      	console.log(d);
+	    }).catch(err => {
+	    	console.log(err);
+	    	throw new Error(err);
+	    });
+  	});
 }
 
 // getData();

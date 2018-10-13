@@ -5,6 +5,7 @@ import { createContext, CryptoFactory } from 'sawtooth-sdk/signing';
 import { Transaction, TransactionHeader, Batch, BatchHeader, BatchList } from 'sawtooth-sdk/protobuf';
 import axios from 'axios';
 import * as CONSTANTS from './services/constants';
+import AddressStore from './services/addressing';
 
 
 async function asymmetricEncryptDocumentpassword(publicKey, documentPasword) {
@@ -34,25 +35,27 @@ async function encryptUserDocument(userDoc, publicKey) {
 
 
 
-function createPayloadAndSend(action, encryptedDocument, obj, publicKeyHex, signer) {
+function createPayloadAndSend(action, encryptedDocument, approvedList, publicKeyHex, signer) {
     let payload = {
         action: action,
-        data: encryptedDocument
+        data: encryptedDocument,
+        approvedList: JSON.stringify(approvedList)
     }
 
-    if(action == 'create') {
-        payload['approvedList'] = JSON.stringify(obj)
-    }
+    /*if(action == 'create' ||) {
+        payload['approvedList'] = JSON.stringify(approvedList)
+    }*/
 
     const payloadBytes = encode(payload);
+    const address = AddressStore.getUserAddress(publicKeyHex);
 
     const transactionHeaderBytes = TransactionHeader.encode({
         signerPublicKey: publicKeyHex,
         batcherPublicKey: publicKeyHex,
         familyName: CONSTANTS.FAMILY_NAME,
         familyVersion: CONSTANTS.FAMILY_VERSION,
-        inputs: [ CONSTANTS.NAMESPACE ],
-        outputs: [ CONSTANTS.NAMESPACE ],
+        inputs: [ address ],
+        outputs: [ address ],
         nonce: (Math.random() * 10 ** 18).toString(36),
         payloadSha512: createHash('sha512').update(payloadBytes).digest('hex')
     }).finish()

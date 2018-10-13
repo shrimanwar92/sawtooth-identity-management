@@ -8,6 +8,8 @@ import AddressStore from './addressing';
 
 class Storage {
 
+    rootPath: string = 'C:/Users/nshriman/Videos/sawtooth-kyc/'
+
 	async makeKeyPair(userName: string): Promise<boolean> {
 		const context = createContext('secp256k1');
 		const privateKey = context.newRandomPrivateKey();
@@ -16,8 +18,8 @@ class Storage {
         const publicKeyHex = signer.getPublicKey().asHex();
 
         try {
-        	fs.writeFileSync(path.resolve(__dirname, `./../keys/${userName}.priv`), privateKeyHex);
-        	fs.writeFileSync(path.resolve(__dirname, `./../keys/${userName}.pub`), publicKeyHex);
+        	fs.writeFileSync(path.resolve(__dirname, `./../../keys/${userName}.priv`), privateKeyHex);
+        	fs.writeFileSync(path.resolve(__dirname, `./../../keys/${userName}.pub`), publicKeyHex);
         	return true;
         } catch (err) {
         	return err;
@@ -26,7 +28,7 @@ class Storage {
 
     async getUserPublicKey(userName: string): Promise<any> {
     	try {
-    		return await fs.readFileSync(`${process.cwd()}/keys/${userName}.pub`);
+    		return await fs.readFileSync(path.resolve(__dirname, `./../../keys/${userName}.pub`));
     	} catch (err) {
     		return err;
     	}
@@ -34,13 +36,13 @@ class Storage {
 
     async getUserPrivateKey(userName: string): Promise<any> {
     	try {
-    		return await fs.readFileSync(`${process.cwd()}/keys/${userName}.priv`);
+    		return await fs.readFileSync(path.resolve(__dirname, `./../../keys/${userName}.priv`));
     	} catch (err) {
     		return err;
     	}
     }
 
-    async generateAddress(userName: string): Promise<string> {
+    async generateAddress(userName: string): Promise<any> {
     	const keyPair = await this.makeKeyPair(userName);
     	if(keyPair) {
             try {

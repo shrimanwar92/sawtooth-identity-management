@@ -13,6 +13,7 @@ const crypto_1 = require("crypto");
 const protobuf_1 = require("sawtooth-sdk/protobuf");
 const axios_1 = require("axios");
 const CONSTANTS = require("./services/constants");
+const addressing_1 = require("./services/addressing");
 function asymmetricEncryptDocumentpassword(publicKey, documentPasword) {
     return __awaiter(this, void 0, void 0, function* () {
         // asymmetric encrypt the document password so user with private key can decrypt it
@@ -41,22 +42,24 @@ function encryptUserDocument(userDoc, publicKey) {
     });
 }
 exports.encryptUserDocument = encryptUserDocument;
-function createPayloadAndSend(action, encryptedDocument, obj, publicKeyHex, signer) {
+function createPayloadAndSend(action, encryptedDocument, approvedList, publicKeyHex, signer) {
     let payload = {
         action: action,
-        data: encryptedDocument
+        data: encryptedDocument,
+        approvedList: JSON.stringify(approvedList)
     };
-    if (action == 'create') {
-        payload['approvedList'] = JSON.stringify(obj);
-    }
+    /*if(action == 'create' ||) {
+        payload['approvedList'] = JSON.stringify(approvedList)
+    }*/
     const payloadBytes = encoding_1.encode(payload);
+    const address = addressing_1.default.getUserAddress(publicKeyHex);
     const transactionHeaderBytes = protobuf_1.TransactionHeader.encode({
         signerPublicKey: publicKeyHex,
         batcherPublicKey: publicKeyHex,
         familyName: CONSTANTS.FAMILY_NAME,
         familyVersion: CONSTANTS.FAMILY_VERSION,
-        inputs: [CONSTANTS.NAMESPACE],
-        outputs: [CONSTANTS.NAMESPACE],
+        inputs: [address],
+        outputs: [address],
         nonce: (Math.random() * Math.pow(10, 18)).toString(36),
         payloadSha512: crypto_1.createHash('sha512').update(payloadBytes).digest('hex')
     }).finish();

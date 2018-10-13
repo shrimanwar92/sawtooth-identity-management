@@ -34,7 +34,7 @@ class KycHandler extends handler_1.TransactionHandler {
             return user_actions_1.deleteUser(context, publicKey);
         }
         else if (action == 'approve') {
-            return user_actions_1.approve(context, payload.publicKey);
+            return user_actions_1.approve(context, publicKey, payload);
         }
         else if (action == 'reject') {
             return user_actions_1.reject(context, payload.publicKey);

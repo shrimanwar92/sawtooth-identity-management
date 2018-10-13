@@ -35,15 +35,14 @@ function updateUser(context, publicKey, payload) {
         const updates = {};
         try {
             const state = yield context.getState([address]);
-            const decodedUser = encoding_1.decode(state[address]);
-            console.log(decodedUser);
             if (state[address].length == 0) {
                 throw new exceptions_1.InvalidTransaction(`User does not exist with key: ${publicKey}`);
             }
+            const decodedUser = encoding_1.decode(state[address]);
             if (decodedUser['owner'] != publicKey) {
                 throw new exceptions_1.InvalidTransaction(`Update can be done by owner itself.`);
             }
-            updates[address] = encoding_1.encode({ owner: publicKey, user: payload.data, approvedList: decodedUser.approvedList });
+            updates[address] = encoding_1.encode({ owner: publicKey, user: payload.data, approvedList: payload.approvedList });
             return context.setState(updates);
         }
         catch (err) {
@@ -52,6 +51,28 @@ function updateUser(context, publicKey, payload) {
     });
 }
 exports.updateUser = updateUser;
+function approve(context, publicKey, payload) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const address = addressing_1.default.getUserAddress(publicKey);
+        const updates = {};
+        try {
+            const state = yield context.getState([address]);
+            if (state[address].length == 0) {
+                throw new exceptions_1.InvalidTransaction(`User does not exist with key: ${publicKey}`);
+            }
+            const decodedUser = encoding_1.decode(state[address]);
+            if (decodedUser['owner'] != publicKey) {
+                throw new exceptions_1.InvalidTransaction(`Update can be done by owner itself.`);
+            }
+            updates[address] = encoding_1.encode({ owner: publicKey, user: decodedUser.user, approvedList: payload.approvedList });
+            return context.setState(updates);
+        }
+        catch (err) {
+            throw new Error(err);
+        }
+    });
+}
+exports.approve = approve;
 function deleteUser(context, publicKey) {
     return __awaiter(this, void 0, void 0, function* () {
         const address = addressing_1.default.getUserAddress(publicKey);
@@ -68,11 +89,6 @@ function deleteUser(context, publicKey) {
     });
 }
 exports.deleteUser = deleteUser;
-function approve(context, publicKey) {
-    return __awaiter(this, void 0, void 0, function* () {
-    });
-}
-exports.approve = approve;
 function reject(context, publicKey) {
     return __awaiter(this, void 0, void 0, function* () {
     });

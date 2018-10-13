@@ -9,7 +9,7 @@ async function createUser(context: any, publicKey: string, payload): Promise<any
   	const state = await context.getState([address]);
   	const updates = {};
   	if (state[address].length > 0) {
-      throw new InvalidTransaction(`Collection already exists with key: ${publicKey}`);
+        throw new InvalidTransaction(`Collection already exists with key: ${publicKey}`);
     }
   	updates[address] = encode({  owner: publicKey,  user: payload.data, approvedList: payload.approvedList });
     return context.setState(updates);
@@ -25,17 +25,41 @@ async function updateUser (context: any, publicKey: string, payload: any): Promi
 
     try {
         const state = await context.getState([address]);
-        const decodedUser = decode(state[address]);
-
-        console.log(decodedUser);
 
         if(state[address].length == 0) {
             throw new InvalidTransaction(`User does not exist with key: ${publicKey}`);
         }
+
+        const decodedUser = decode(state[address]);
+
         if(decodedUser['owner'] != publicKey) {
             throw new InvalidTransaction(`Update can be done by owner itself.`);
         }
-        updates[address] = encode({  owner: publicKey,  user: payload.data, approvedList: decodedUser.approvedList });
+        updates[address] = encode({  owner: publicKey,  user: payload.data, approvedList: payload.approvedList });
+        return context.setState(updates);
+
+    } catch (err) {
+        throw new Error(err);
+    }
+}
+
+async function approve (context: any, publicKey: string, payload: any): Promise<any> {
+    const address: string = AddressStore.getUserAddress(publicKey);
+    const updates = {};
+
+    try {
+        const state = await context.getState([address]);
+
+        if(state[address].length == 0) {
+            throw new InvalidTransaction(`User does not exist with key: ${publicKey}`);
+        }
+
+        const decodedUser = decode(state[address]);
+
+        if(decodedUser['owner'] != publicKey) {
+            throw new InvalidTransaction(`Update can be done by owner itself.`);
+        }
+        updates[address] = encode({  owner: publicKey,  user: decodedUser.user, approvedList: payload.approvedList });
         return context.setState(updates);
 
     } catch (err) {
@@ -55,10 +79,6 @@ async function deleteUser (context: any, publicKey: string): Promise<any> {
     } catch (err) {
         new Error(err);
     }
-}
-
-async function approve (context: any, publicKey: string): Promise<any> {
-
 }
 
 async function reject (context: any, publicKey: string): Promise<any> {

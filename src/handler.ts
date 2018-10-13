@@ -37,7 +37,7 @@ export default class KycHandler extends TransactionHandler {
     } else if (action == 'delete') {
       return deleteUser(context, publicKey);
     } else if (action == 'approve') {
-      return approve(context, payload.publicKey);
+      return approve(context, publicKey, payload);
     } else if (action == 'reject') {
       return reject(context, payload.publicKey);
     }
