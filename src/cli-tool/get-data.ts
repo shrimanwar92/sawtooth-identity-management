@@ -82,6 +82,7 @@ export function getData(addr, pub, pri) {
 	    // id public key is not in approved list means, that user has not access to the data
 	    if(approvedList[pub] == undefined) {
 	    	console.log('You do not have access to data. Access denied.');
+	    	return false;
 	    }
 	    AsymmetricEncryption.decrypt(pri, approvedList[pub]).then(dec => {
 	    	console.log('\n');
