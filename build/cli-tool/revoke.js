@@ -27,6 +27,7 @@ function revoke() {
         if (approvedList[bobby.toString().trim()]) {
             delete approvedList[bobby.toString().trim()];
         }
+        console.log("Removing Bobby's access from Alice's approved list.");
         transaction_builder_1.createPayloadAndSend('update', decodedData.user, approvedList, alice.publicKey, alice.signer);
     });
 }

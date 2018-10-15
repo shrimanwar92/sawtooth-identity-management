@@ -30,6 +30,7 @@ function approve() {
         const encPwd = yield encoding_1.AsymmetricEncryption.encrypt(bobby.toString().trim(), pwd);
         // add bobby to approved list
         approvedList[bobby] = encPwd;
+        console.log("Adding Bobby to Alice's approved list.");
         transaction_builder_1.createPayloadAndSend('update', decodedData.user, approvedList, alice.publicKey, alice.signer);
     });
 }

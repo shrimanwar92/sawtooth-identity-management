@@ -25,5 +25,7 @@ async function revoke() {
 		delete approvedList[bobby.toString().trim()];
 	}
 
+	console.log("Removing Bobby's access from Alice's approved list.");
+
 	createPayloadAndSend('update', decodedData.user, approvedList, alice.publicKey, alice.signer);
 }

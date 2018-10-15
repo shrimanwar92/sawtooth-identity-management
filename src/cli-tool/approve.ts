@@ -30,6 +30,8 @@ async function approve() {
 	// add bobby to approved list
 	approvedList[bobby] = encPwd;
 
+	console.log("Adding Bobby to Alice's approved list.");
+
 	createPayloadAndSend('update', decodedData.user, approvedList, alice.publicKey, alice.signer);
 
 }
