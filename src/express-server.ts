@@ -32,7 +32,9 @@ class App {
       }
 
       ws.onmessage = (data) => {
-        console.log(data);
+      	console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+        console.log(JSON.parse(data.data));
+        console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
       }
   }
 }
