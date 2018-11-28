@@ -1,0 +1,14 @@
+{
+  "name": "ecies",
+  "version": "1.0.0",
+  "description": "ecies nodejs implementation",
+  "main": "test-ecies.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "standard-ecies": "^1.0.0"
+  }
+}
