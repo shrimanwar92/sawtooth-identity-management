@@ -39,6 +39,7 @@ var _a = require('sawtooth-sdk/signing');
 var createContext = _a.createContext;
 var CryptoFactory = _a.CryptoFactory;
 var context = createContext('secp256k1');
+var { AsymmetricEncryption } = require('../services/encoding');
 
 // option parameter is optional, all options are optional except iv,
 // when symmetric cipher is not in ecb mode, iv option must be offered. 
@@ -52,7 +53,7 @@ var options = {
     curveName: 'secp256k1',
     symmetricCypherName: 'aes-256-ecb',
     iv: null, // iv is used in symmetric cipher, set null if cipher is in ECB mode. 
-    keyFormat: 'compressed',
+    keyFormat: 'uncompressed',
     s1: null, // optional shared information1
     s2: null // optional shared information2
 }
@@ -76,11 +77,13 @@ console.log();
 
 // Alice wants to send secret message to Bob
 var plainText = Buffer.from('Some secret message');
-var encryptedText = ecies.encrypt(Buffer.from(publicKeyHex1, 'hex'), plainText, options);
-console.log(encryptedText);
+AsymmetricEncryption.encrypt(Buffer.from(publicKeyHex1, 'hex'), plainText, options).then(encryptedText => {
+    console.log(encryptedText);
 
-// Bob decrypts the message
-var bob = crypto.createECDH(options.curveName);
-bob.setPrivateKey(privateKeyHex1, 'hex');
-var decryptedText = ecies.decrypt(bob, encryptedText, options);
-console.log(plainText.toString());
+    // Bob decrypts the message
+    // var bob = crypto.createECDH(options.curveName);
+    // bob.setPrivateKey(Buffer.from(privateKeyHex1, 'hex'), 'hex');
+    AsymmetricEncryption.decrypt(privateKeyHex1, encryptedText).then(decryptedText => {
+        console.log(decryptedText.toString());
+    })
+})

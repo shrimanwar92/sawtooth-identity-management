@@ -78,19 +78,20 @@ export function getData(addr, pub, pri) {
   	axios.get(`http://localhost:8008/state?address=${addr}`).then(response => {
 		const data = decode(response.data.data[0].data);
 	    let approvedList = JSON.parse(data.approvedList);
+	    let bp = Buffer.from(approvedList[pub]);
 
 	    // id public key is not in approved list means, that user has not access to the data
 	    if(approvedList[pub] == undefined) {
 	    	console.log('You do not have access to data. Access denied.');
 	    	return false;
 	    }
-	    AsymmetricEncryption.decrypt(pri, approvedList[pub]).then(dec => {
-	    	console.log('\n');
+	    AsymmetricEncryption.decrypt(pri, bp).then(dec => {
+	    	console.log();
 	      	console.log(dec);
 
 	      	var d = JSON.parse(SymmetricEncryption.decryptDocument(data.user, dec));
 	      	
-	      	console.log('\n');
+	      	console.log();
 	      	console.log(d);
 	    }).catch(err => {
 	    	console.log(err);

@@ -9,8 +9,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const crypto = require("crypto");
-const eth_crypto_1 = require("eth-crypto");
+const ecies = require("standard-ecies");
 const ALGORITHM = 'aes-256-ctr';
+const options = {
+    hashName: 'sha256',
+    hashLength: 32,
+    macName: 'sha256',
+    macLength: 32,
+    curveName: 'secp256k1',
+    symmetricCypherName: 'aes-256-ecb',
+    iv: null,
+    keyFormat: 'uncompressed',
+    s1: null,
+    s2: null // optional shared information2
+};
 class SymmetricEncryption {
     static generateDocumentPwd(pubKey) {
         return crypto.createHash('sha256').update(pubKey).digest('base64');
@@ -26,21 +38,15 @@ exports.SymmetricEncryption = SymmetricEncryption;
 class AsymmetricEncryption {
     static encrypt(publicKeyHex, payload) {
         return __awaiter(this, void 0, void 0, function* () {
-            const encrypted = yield eth_crypto_1.default.encryptWithPublicKey(publicKeyHex, JSON.stringify(payload));
-            return eth_crypto_1.default.cipher.stringify(encrypted);
+            const bufferedPayload = Buffer.from(payload.toString());
+            return ecies.encrypt(Buffer.from(publicKeyHex, 'hex'), bufferedPayload, options);
         });
     }
-    static decrypt(privateKeyHex, encryptedString) {
+    static decrypt(privateKeyHex, encryptedText) {
         return __awaiter(this, void 0, void 0, function* () {
-            const encryptedObject = eth_crypto_1.default.cipher.parse(encryptedString);
-            const decrypted = yield eth_crypto_1.default.decryptWithPrivateKey(privateKeyHex, encryptedObject);
-            return JSON.parse(decrypted);
-            /*return await EthCrypto.decryptWithPrivateKey( privateKeyHex, {
-                iv: encryptedData.iv,
-                ephemPublicKey: encryptedData.ephemPublicKey,
-                ciphertext: encryptedData.ciphertext,
-                mac: encryptedData.mac
-            });*/
+            const ecdh = crypto.createECDH(options.curveName);
+            ecdh.setPrivateKey(privateKeyHex, 'hex');
+            return ecies.decrypt(ecdh, encryptedText, options);
         });
     }
 }

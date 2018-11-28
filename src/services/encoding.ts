@@ -1,7 +1,20 @@
 import * as crypto from 'crypto';
-import EthCrypto from 'eth-crypto';
+import * as ecies from 'standard-ecies';
 
 const ALGORITHM = 'aes-256-ctr';
+
+const options = {
+    hashName: 'sha256',
+    hashLength: 32,
+    macName: 'sha256',
+    macLength: 32,
+    curveName: 'secp256k1',
+    symmetricCypherName: 'aes-256-ecb',
+    iv: null, // iv is used in symmetric cipher, set null if cipher is in ECB mode. 
+    keyFormat: 'uncompressed',
+    s1: null, // optional shared information1
+    s2: null // optional shared information2
+}
 
 class SymmetricEncryption {
 
@@ -22,20 +35,14 @@ class SymmetricEncryption {
 class AsymmetricEncryption {
 
     static async encrypt(publicKeyHex: string, payload: any): Promise<string> {
-        const encrypted = await EthCrypto.encryptWithPublicKey(publicKeyHex, JSON.stringify(payload));
-        return EthCrypto.cipher.stringify(encrypted);
+        const bufferedPayload = Buffer.from(payload.toString());
+        return ecies.encrypt(Buffer.from(publicKeyHex, 'hex'), bufferedPayload, options);
     }
 
-    static async decrypt(privateKeyHex: string, encryptedString: string): Promise<string> {
-        const encryptedObject = EthCrypto.cipher.parse(encryptedString);
-        const decrypted = await EthCrypto.decryptWithPrivateKey(privateKeyHex, encryptedObject);
-        return JSON.parse(decrypted);
-        /*return await EthCrypto.decryptWithPrivateKey( privateKeyHex, {
-            iv: encryptedData.iv,
-            ephemPublicKey: encryptedData.ephemPublicKey,
-            ciphertext: encryptedData.ciphertext,
-            mac: encryptedData.mac
-        });*/
+    static async decrypt(privateKeyHex: string, encryptedText: any): Promise<string> {
+        const ecdh = crypto.createECDH(options.curveName);
+        ecdh.setPrivateKey(privateKeyHex, 'hex');
+        return ecies.decrypt(ecdh, encryptedText, options);
     }
 }
 
